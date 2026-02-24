@@ -1,0 +1,39 @@
+# 데이터셋 설정
+dataset:
+  repo_id: "SJunha/paper-clinic"
+  max_length: 1024
+
+# 모델 설정
+model:
+  # 기본 모델 (qwen-7b, qwen-14b, llama-3.1, solar, gemma-2 중 선택)
+  selected_model: "llama-3.1"
+  model_map:
+    qwen-7b: "Qwen/Qwen2.5-7B-Instruct"
+    qwen-14b: "Qwen/Qwen2.5-14B-Instruct"
+    llama-3.1: "meta-llama/Llama-3.1-8B-Instruct"
+    solar: "upstage/SOLAR-10.7B-v1.0"
+    gemma-2: "google/gemma-2-9b-it"
+
+# LoRA 설정
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: ["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+# 학습 하이퍼파라미터
+training:
+  learning_rate: 0.0002
+  num_epochs: 3
+  batch_size: 1
+  gradient_accumulation_steps: 8
+  save_steps: 100
+  eval_steps: 100
+  logging_steps: 10
+  fp16: true
+
+# 출력 설정
+output:
+  dir_prefix: "./scoring_model_"
+  save_csv: true
+  max_new_tokens: 512

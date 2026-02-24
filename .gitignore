@@ -1,0 +1,32 @@
+# 가상 환경
+venv/
+.env
+
+# 파이썬 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 학습 결과 및 모델 가중치 (용량이 커서 제외)
+scoring_model_*/
+pilot_out/
+*.bin
+*.pt
+*.safetensors
+.repo_id
+
+# 데이터셋 (용량이 크거나 외부 로드 권장)
+data/
+*.json
+*.csv
+
+# 기타 설정 및 로그
+.ipynb_checkpoints/
+.vscode/
+.idea/
+*.log
+debug.txt
+debug_output.txt
+peek_data.txt
+debug.txt
+pilot_test_results.csv
