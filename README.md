@@ -1,53 +1,73 @@
-# 서술형 채점 모델 학습 파이프라인 (Automated Scoring & Feedback Training)
+# 서술형 채점 모델 자동화 학습 파이프라인 (LLM Automated Scoring)
 
-이 프로젝트는 다양한 LLM(Qwen 2.5, Llama 3.1, Solar, Gemma 2)을 활용하여 서술형 에세이를 채점하고 정성적인 피드백을 생성하는 모델을 학습시키는 자동화된 파이프라인을 제공합니다.
+이 프로젝트는 Qwen 2.5, Llama 3.1, Solar, Gemma 2 등 최신 LLM을 활용하여 서술형 에세이 채점 및 피드백 생성 모델을 구축하는 자동화 파이프라인입니다.
 
-## 🚀 주요 특징
-- **다양한 모델 지원**: Qwen 2.5 (7B/14B), Llama 3.1 (8B), Solar 10.7B, Gemma 2 (9B) 지원
-- **자동화된 파이프라인**: 환경 설정부터 다수 모델 순차 학습까지 한 번의 명령어로 수행
-- **효율적인 학습**: QLoRA(4-bit 양자화)를 적용하여 VRAM 사용량 최소화
-- **정교한 데이터 처리**: 점수뿐만 아니라 채점 근거(Reasoning)와 피드백(Feedback)을 함께 학습
-- **결과 분석**: 학습 완료 후 테스트 데이터에 대한 추론 결과를 CSV 파일로 자동 저장
+## 📋 사전 준비 사항 (Prerequisites)
 
-## 🛠️ 설치 방법 (Windows/Linux 공통)
+### 1. 모델 접근 권한 승인 (Gated Models)
+본 프로젝트에서 사용하는 **Llama 3.1** 및 **Gemma 2** 모델은 Hugging Face에서 사용 승인이 필요합니다.
+- [Meta Llama 3.1 페이지](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) 및 [Google Gemma 2 페이지](https://huggingface.co/google/gemma-2-9b-it)에 접속하여 사용 요청(Request Access)을 완료해 주세요.
+- 승인된 계정의 **Hugging Face Write Token**이 필요합니다.
 
-Python 3.13 환경에서 최적화되어 있습니다. 다음 명령어를 실행하여 가상 환경 구축 및 필수 라이브러리를 설치하세요.
+### 2. 하드웨어 요구 사항
+- **GPU**: NVIDIA GPU (최소 VRAM 16GB 권장, 14B 모델의 경우 24GB 이상 권장)
+- **Driver**: CUDA 12.1 ~ 12.4 지원 드라이버
 
+---
+
+## 🚀 실행 순서 (Step-by-Step)
+
+서버에 접속한 후 반드시 다음 순서대로 명령어를 실행해 주세요.
+
+### **Step 1: 실행 권한 부여**
+가장 먼저 스크립트 파일들이 실행될 수 있도록 권한을 설정합니다.
+```bash
+chmod +x setup.sh run.sh
+```
+
+### **Step 2: 필수 환경 구축**
+가상 환경을 생성하고 필수 라이브러리를 설치합니다.
+- **Qwen, Solar 모델만 사용할 경우**: 토큰 입력 없이 엔터를 눌러 넘어가도 됩니다.
+- **Llama 3.1, Gemma 2 모델을 사용할 경우**: 해당 모델 페이지에서 승인받은 계정의 토큰을 입력해야 합니다.
 ```bash
 bash setup.sh
 ```
 
-## 📂 설정 (config.yaml)
-학습 환경을 수정하려면 `config.yaml` 파일을 편집하세요. 코드를 수정할 필요 없이 다음 항목들을 제어할 수 있습니다:
-- `model.selected_model`: 기본으로 학습할 모델 선택
-- `training`: 학습률, 에포크, 배치 사이즈 등 하이퍼파라미터
-- `lora`: LoRA Rank(r), Alpha 값 조정
-
-## 🏃 실행 방법
-
-### 1. 전체 자동화 실행
-가장 권장되는 방식입니다. 실행 후 메뉴에서 학습 모드를 선택할 수 있습니다.
-
+### **Step 3: 학습 파이프라인 가동**
+환경 구축이 끝났다면 통합 스크립트를 통해 검증 및 학습을 시작합니다.
 ```bash
 bash run.sh
 ```
-- **Pilot Test**: 실제 학습 전 시스템 호환성을 1분 내에 검증합니다.
-- **Single Model**: 특정 모델 하나만 선택하여 학습합니다.
-- **All Models**: `config.yaml`에 정의된 모든 모델을 순차적으로 자동 학습합니다.
+- **Pilot Test**: 시스템 및 라이브러리 호환성을 1분 내에 체크합니다. (추천)
+- **Mode 1**: `config.yaml`에 설정된 단일 모델 학습
+- **Mode 2**: 전체 모델(Qwen, Llama, Solar, Gemma) 순차 자동 학습
 
-### 2. 개별 스크립트 실행
-- **환경 검증 전용**: `python pilot_test.py`
-- **특정 모델 학습**: `python train.py --model qwen-7b`
-- **모든 모델 일괄 학습**: `python train_all.py`
+---
 
-## 📊 결과 확인
-학습이 완료되면 다음과 같은 결과물이 생성됩니다.
-1. **모델 어댑터**: `scoring_model_{model_name}/final_adapter` 폴더에 저장됩니다.
-2. **평가 결과**: `test_results_{model_name}.csv` 파일로 저장되며, [질문, 실제 점수, 모델 예측 점수/피드백]을 포함합니다.
+## ⚙️ 설정 관리 (config.yaml)
+학습 파라미터나 모델 구성을 바꾸고 싶을 때 `config.yaml` 파일을 편집하세요.
+- `model.selected_model`: 단일 학습 시 사용할 기본 모델
+- `training.num_epochs`: 학습 횟수 (기본값: 3)
+- `training.batch_size`: 메모리 부족 시 1로 유지 권장
 
-## ⚠️ 주의사항
-- **GPU 메모리**: Qwen-14B 등 큰 모델을 학습할 때는 VRAM이 최소 16GB~24GB 이상 필요할 수 있습니다. 메모리가 부족할 경우 `config.yaml`에서 `batch_size`를 1로 유지하고 `gradient_accumulation_steps`를 조절하세요.
-- **데이터셋**: 기본적으로 `SJunha/paper-clinic` (Hugging Face Public) 데이터셋을 사용합니다.
+---
+
+## 📂 결과물 확인 (Output)
+
+### 1. 채점 및 피드백 결과 (CSV)
+학습 종료 후 테스트 데이터에 대한 추론 결과가 `test_results_{model_name}.csv` 파일로 저장됩니다.
+- **포함 내용**: 질문, 학생 에세이, 실제 정답(JSON), 모델 예측값(JSON: 점수+피드백)
+
+### 2. 학습된 모델 가중치 (LoRA Adapter)
+최종 모델 어댑터는 `scoring_model_{model_name}/final_adapter` 폴더에 로컬로 저장됩니다. 향후 다른 추론 서버에서 이 어댑터만 로드하여 사용할 수 있습니다.
+
+---
+
+## 🛠️ 문제 해결 (Troubleshooting)
+- **OOM (Out of Memory)**: 학습 중 메모리 부족 에러가 발생하면 `config.yaml`에서 `batch_size`를 줄이거나 `gradient_accumulation_steps`를 늘리세요.
+- **토큰 에러**: 모델 다운로드 시 401/403 에러가 발생하면 `setup.sh`에서 입력한 토큰이 승인된 계정의 것인지 확인하세요.
+
+---
 
 ## 📄 라이선스
-본 프로젝트의 코드는 자유롭게 수정 및 배포가 가능합니다. 단, 사용된 각 베이스 모델(Llama, Qwen 등)의 라이선스 규정을 준수해야 합니다.
+본 프로젝트의 소스코드는 MIT License를 따르며, 각 모델(Llama, Qwen 등)의 가중치는 해당 제조사의 커뮤니티 라이선스를 따릅니다.
